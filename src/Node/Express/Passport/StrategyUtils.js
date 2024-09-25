@@ -1,3 +1,3 @@
-exports._useStrategy = function(passport, strategyId, strategy) {
+export function _useStrategy(passport, strategyId, strategy) {
   passport.use(strategyId, strategy);
-};
+}

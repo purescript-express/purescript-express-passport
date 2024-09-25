@@ -1,19 +1,21 @@
-exports.getPassport = function() {
-  return require('passport')
+import { Passport } from 'passport';
+
+export function getPassport() {
+  return new Passport()
 }
 
-exports._passportInitialize = function(passport, options) {
+export function _passportInitialize(passport, options) {
   return passport.initialize(options)
 }
 
-exports._passportSession = function(passport, options) {
+export function _passportSession(passport, options) {
   return passport.session(options)
 }
 
-exports._isAuthenticated = function(req) {
+export function _isAuthenticated(req) {
   return req.isAuthenticated()
 }
 
-exports._logout = function(req) {
+export function _logout(req) {
   req.logout()
 }

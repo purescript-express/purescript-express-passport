@@ -1,12 +1,12 @@
-exports._addSerializeUser = function(passport, serializer) {
+export function _addSerializeUser(passport, serializer) {
   passport.serializeUser(serializer)
 }
 
-exports._addDeserializeUser = function(passport, deserializer) {
+export function _addDeserializeUser(passport, deserializer) {
   passport.deserializeUser(deserializer)
 }
 
-exports._authenticate = function(passport, strategy, options, callback) {
+export function _authenticate(passport, strategy, options, callback) {
   return
     passport.authenticate(
       strategy,
@@ -27,11 +27,11 @@ exports._authenticate = function(passport, strategy, options, callback) {
     )
 }
 
-exports._login = function(req, user, options, done) {
+export function _login(req, user, options, done) {
   req.login(user, options, done)
 }
 
-exports._getUser = function(req) {
+export function _getUser(req) {
   if (!(req._passport && req._passport.instance)) {
     throw new Error('passport is not initialized')
   }
