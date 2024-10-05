@@ -6,7 +6,6 @@ import Effect.Uncurried (EffectFn3, runEffectFn3)
 import Node.Express.Passport.Types (Passport, PassportStrategy, StrategyId)
 
 foreign import _useStrategy ::
-  forall user.
   EffectFn3
     Passport
     StrategyId
@@ -14,7 +13,6 @@ foreign import _useStrategy ::
     Unit
 
 useStrategy ::
-  forall user.
   Passport ->
   StrategyId ->
   PassportStrategy ->

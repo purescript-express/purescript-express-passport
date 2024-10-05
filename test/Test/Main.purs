@@ -54,17 +54,17 @@ passportMethods =
 
 ------------------------------------------------------------
 passportSerializeString :: AddSerializeUser__Callback String
-passportSerializeString req user = pure $ SerializedUser__Result $ Just $ encodeJson user
+passportSerializeString _req user = pure $ SerializedUser__Result $ Just $ encodeJson user
 
 passportDeserializeString :: AddDeserializeUser__Callback String
-passportDeserializeString req obj = pure $ either onError onSuccess $ decodeJson obj
+passportDeserializeString _req obj = pure $ either onError onSuccess $ decodeJson obj
   where
   onError = const DeserializedUser__Pass
 
   onSuccess = DeserializedUser__Result <<< Just
 
 passportSerializeNumber :: AddSerializeUser__Callback Number
-passportSerializeNumber req user = pure $ SerializedUser__Result $ Just $ encodeJson user
+passportSerializeNumber _req user = pure $ SerializedUser__Result $ Just $ encodeJson user
 
 verify ::
   forall info.
@@ -75,7 +75,7 @@ verify ::
     { result :: PassportStrategyLocal__CredentialsVerifiedResult String
     , info :: Maybe info
     }
-verify req (Username username) password = pure { result: PassportStrategyLocal__CredentialsVerifiedResult__Success username, info: Nothing }
+verify _req (Username username) _password = pure { result: PassportStrategyLocal__CredentialsVerifiedResult__Success username, info: Nothing }
 
 initPassport :: Effect Passport
 initPassport = do

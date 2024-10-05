@@ -1,104 +1,28 @@
 package:
   name: open-express-passport
   dependencies:
-    - "console"
-    - "effect"
-    - "psci-support"
-    - "maybe"
-    - "either"
-    - "express"
-    - "spec"
-    - "argonaut-codecs"
-    - "foreign"
-    - "newtype"
+    - express
+    - aff
+    - argonaut-core
+    - effect
+    - either
+    - exceptions
+    - foreign
+    - functions
+    - maybe
+    - newtype
+    - nullable
+    - prelude
+    - unsafe-coerce
   test:
     main: Test.Main
-    dependencies: []
+    dependencies:
+      - argonaut-codecs
+      - console
+      - typelevel-prelude
 workspace:
   packageSet:
-    registry: 60.0.1
+    registry: 60.2.1
   extraPackages:
-    api-server:
-      path: /home/srghma/projects/nativescript-testapp/packages/api-server
-    bench:
-      path: /home/srghma/projects/purescript-language-cst-parser/bench
-    bin:
-      path: /home/srghma/projects/purescript-overlay/generate/bin
-    bolson:
-      path: /home/srghma/projects/purescript-bolson
-    codegen:
-      path: /home/srghma/projects/purescript-deku/codegen
-    common:
-      path: /home/srghma/projects/nativescript-testapp/packages/common
-    deku:
-      path: /home/srghma/projects/purescript-deku/deku
-    deku-core:
-      path: /home/srghma/projects/purescript-deku/deku-core
-    deku-css:
-      path: /home/srghma/projects/purescript-deku/deku-css
-    deku-documentation:
-      path: /home/srghma/projects/deku-documentation
-    deku-dom:
-      path: /home/srghma/projects/purescript-deku/deku-dom
-    deku-nextui:
-      path: /home/srghma/projects/purescript-deku-nextui
-    dodo-printer:
-      path: /home/srghma/projects/purescript-dodo-printer
     express:
       path: /home/srghma/projects/purescript-express
-    github-actions-toolkit:
-      path: /home/srghma/projects/purescript-github-actions-toolkit
-    html2deku:
-      path: /home/srghma/projects/html2deku
-    hyrule:
-      path: /home/srghma/projects/purescript-hyrule
-    hyrule-demo:
-      path: /home/srghma/projects/purescript-hyrule-demo
-    language-cst-parser:
-      path: /home/srghma/projects/purescript-language-cst-parser/lib
-    lib:
-      path: /home/srghma/projects/purescript-overlay/generate/lib
-    lumi-components:
-      path: /home/srghma/projects/purescript-lumi-components
-    node-workerbees:
-      path: /home/srghma/projects/purescript-node-workerbees
-    open-drawing:
-      path: /home/srghma/projects/purescript-open-drawing/lib
-    open-drawing-example:
-      path: /home/srghma/projects/purescript-open-drawing/example
-    open-folds:
-      path: /home/srghma/projects/purescript-open-folds
-    open-foreign-generic:
-      path: /home/srghma/projects/purescript-open-foreign-generic
-    open-memoize:
-      path: /home/srghma/projects/purescript-open-memoize
-    open-mkdirp-aff:
-      path: /home/srghma/projects/purescript-open-mkdirp-aff
-    open-pairing:
-      path: /home/srghma/projects/purescript-open-pairing_
-    parse-package-set:
-      path: /home/srghma/projects/purescript-language-cst-parser/parse-package-set
-    profunctor:
-      path: /home/srghma/projects/purescript-profunctor
-    simple:
-      path: /home/srghma/projects/purescript-overlay/nix/examples/simple
-    simple-codegen:
-      path: /home/srghma/projects/purescript-overlay/nix/examples/simple-codegen
-    simple-ffi:
-      path: /home/srghma/projects/purescript-overlay/nix/examples/simple-ffi
-    spago:
-      path: /home/srghma/projects/spago
-    spago-bin:
-      path: /home/srghma/projects/spago/bin
-    spago-core:
-      path: /home/srghma/projects/spago/core
-    tidy:
-      path: /home/srghma/projects/purescript-tidy/lib
-    tidy-cli:
-      path: /home/srghma/projects/purescript-tidy/bin
-    tidy-codegen:
-      path: /home/srghma/projects/purescript-tidy-codegen
-    tidy-script:
-      path: /home/srghma/projects/purescript-tidy/script
-    tldr:
-      path: /home/srghma/projects/purescript-tldr
