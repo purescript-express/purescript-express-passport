@@ -1,7 +1,7 @@
 {
   "workspace": {
     "packages": {
-      "open-express-passport": {
+      "express-passport": {
         "path": "./",
         "core": {
           "dependencies": [
@@ -150,7 +150,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "60.2.1"
+        "registry": "60.3.0"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -447,6 +447,7 @@
         "object-maps": "0.3.0",
         "ocarina": "1.5.4",
         "oooooooooorrrrrrrmm-lib": "0.0.1",
+        "open-colors-scales-and-schemes": "1.0.0",
         "open-folds": "6.4.0",
         "open-foreign-generic": "11.0.3",
         "open-memoize": "6.2.0",
@@ -502,6 +503,7 @@
         "react-basic-classic": "3.0.0",
         "react-basic-dnd": "10.1.0",
         "react-basic-dom": "6.1.0",
+        "react-basic-dom-beta": "0.1.1",
         "react-basic-emotion": "7.1.0",
         "react-basic-hooks": "8.2.0",
         "react-basic-storybook": "2.0.0",
@@ -930,19 +932,22 @@
         "effect",
         "either",
         "exceptions",
+        "foldable-traversable",
         "foreign",
         "foreign-object",
-        "functions",
         "maybe",
         "newtype",
         "node-http",
+        "node-path",
+        "nullable",
         "open-foreign-generic",
         "prelude",
         "record",
         "strings",
         "test-unit",
         "transformers",
-        "typelevel-prelude"
+        "typelevel-prelude",
+        "unsafe-coerce"
       ]
     },
     "foldable-traversable": {

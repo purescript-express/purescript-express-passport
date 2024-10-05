@@ -1,5 +1,5 @@
 package:
-  name: open-express-passport
+  name: express-passport
   dependencies:
     - express
     - aff
@@ -22,7 +22,7 @@ package:
       - typelevel-prelude
 workspace:
   packageSet:
-    registry: 60.2.1
+    registry: 60.3.0
   extraPackages:
     express:
       path: /home/srghma/projects/purescript-express

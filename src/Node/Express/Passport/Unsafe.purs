@@ -4,20 +4,19 @@ import Prelude
 
 import Data.Argonaut.Core (Json)
 import Data.Either (Either(..))
-import Data.Function.Uncurried (Fn4, runFn4)
+import Data.Function.Uncurried (Fn3, Fn4, runFn3, runFn4)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Effect (Effect)
 import Effect.Aff (Aff, makeAff, nonCanceler, runAff_)
-import Effect.Class (liftEffect)
 import Effect.Exception (Error)
-import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3, EffectFn4, mkEffectFn1, mkEffectFn3, mkEffectFn4, runEffectFn1, runEffectFn2, runEffectFn3, runEffectFn4)
+import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3, EffectFn4, EffectFn7, mkEffectFn1, mkEffectFn3, mkEffectFn7, runEffectFn1, runEffectFn2, runEffectFn3, runEffectFn4)
 import Foreign (Foreign, unsafeToForeign)
-import Node.Express.Handler (HandlerM(..), Handler, runHandlerM)
+import Node.Express.Handler (Handler, runHandlerM)
 import Node.Express.Passport.Types (Passport, StrategyId)
 import Node.Express.Passport.Utils (magicPass)
-import Node.Express.Types (Request, Response)
+import Node.Express.Types (HandlerFnInternal_Req_Res_Next, Middleware, Request, Response, NextFnInternal)
 import Unsafe.Coerce (unsafeCoerce)
 
 foreign import _getUser :: forall user. EffectFn1 Request (Nullable user)
@@ -67,7 +66,7 @@ unsafeLogIn user options req = makeAff \affCallback -> do
 ------------------------------------------------------------------------------------------------------------------------
 
 type Authenticate__Implementation__Callback user info
-  = EffectFn4 (Nullable Error) (Nullable user) (Nullable info) (Nullable Number) Unit
+  = EffectFn7 Request Response NextFnInternal (Nullable Error) (Nullable user) (Nullable info) (Nullable Number) Unit
 
 type Authenticate__Implementation__Options
   = { session :: Boolean
@@ -80,14 +79,21 @@ type Authenticate__Implementation__Options
     , assignProperty :: Nullable String
     }
 
-foreign import _authenticate ::
+foreign import _authenticateWithoutCallback ::
+  Fn3
+    Passport
+    StrategyId
+    Authenticate__Implementation__Options
+    HandlerFnInternal_Req_Res_Next
+
+foreign import _authenticateWithCallback ::
   forall user info.
   Fn4
     Passport
     StrategyId
     Authenticate__Implementation__Options
-    (Nullable (Authenticate__Implementation__Callback user info))
-    (EffectFn3 Request Response (Effect Unit) Unit)
+    (Authenticate__Implementation__Callback user info)
+    HandlerFnInternal_Req_Res_Next
 
 -- e.g. flash message
 data AuthenticationMessage
@@ -109,6 +115,18 @@ type AuthenticateOptions
     -- like this https://github.com/graphile/bootstrap-react-apollo/blob/fbeab7b9c2a51b48995a19872b71545428091295/server/middleware/installPassportStrategy.js#L7-L26
     , successReturnToOrRedirect :: Maybe String
     }
+
+authenticateOptionsToImplementation :: AuthenticateOptions -> Authenticate__Implementation__Options
+authenticateOptionsToImplementation options =
+  { session: options.session
+  , successRedirect: Nullable.toNullable options.successRedirect
+  , successMessage: convertAuthenticationMessage options.successMessage
+  , successFlash: convertAuthenticationMessage options.successFlash
+  , failureRedirect: Nullable.toNullable options.failureRedirect
+  , failureMessage: convertAuthenticationMessage options.failureMessage
+  , failureFlash: convertAuthenticationMessage options.failureFlash
+  , assignProperty: Nullable.toNullable options.assignProperty
+  }
 
 defaultAuthenticateOptions :: AuthenticateOptions
 defaultAuthenticateOptions =
@@ -135,62 +153,57 @@ type Authenticate__CustomCallback info user
     } ->
     Handler
 
-unsafeAuthenticate ::
+convertAuthenticationMessage :: AuthenticationMessage -> Foreign
+convertAuthenticationMessage (AuthenticationMessage__Custom msg) = unsafeToForeign msg
+convertAuthenticationMessage AuthenticationMessage__StrategyDefault = unsafeToForeign true
+convertAuthenticationMessage AuthenticationMessage__Disable = unsafeToForeign $ Nullable.null
+
+errorToAuthenticate__CustomCallbackResult :: forall user . Nullable Error -> Nullable user -> Authenticate__CustomCallbackResult user
+errorToAuthenticate__CustomCallbackResult error nuser =
+  case Nullable.toMaybe error of
+    Just error' -> Authenticate__CustomCallbackResult__Error error'
+    Nothing -> case Nullable.toMaybe nuser of
+      Just user' -> Authenticate__CustomCallbackResult__Success user'
+      Nothing -> Authenticate__CustomCallbackResult__AuthenticationError
+
+authenticate__CustomCallbackToImplementation :: forall user info . Authenticate__CustomCallback info user -> Authenticate__Implementation__Callback user info
+authenticate__CustomCallbackToImplementation onAuthenticate =
+   mkEffectFn7 \req res next nerror nuser ninfo nstatus -> do
+      let
+        (handler :: Handler) = onAuthenticate
+            { result: errorToAuthenticate__CustomCallbackResult nerror nuser
+            , info: Nullable.toMaybe ninfo
+            , status: Nullable.toMaybe nstatus
+            }
+      runEffectFn3 (runHandlerM handler) req res next
+
+unsafeAuthenticateWithCallback ::
   forall info user.
   Passport ->
   StrategyId ->
   AuthenticateOptions ->
-  Maybe (Authenticate__CustomCallback info user) ->
-  Handler
-unsafeAuthenticate passport strategyid options onAuthenticate =
-  HandlerM \req res nxt -> do
-    let
-      convertAuthenticationMessage (AuthenticationMessage__Custom msg) = unsafeToForeign msg
-      convertAuthenticationMessage AuthenticationMessage__StrategyDefault = unsafeToForeign true
-      convertAuthenticationMessage AuthenticationMessage__Disable = unsafeToForeign $ Nullable.null
+  Authenticate__CustomCallback info user ->
+  Middleware
 
-      optionsImplementation =
-        { session: options.session
-        , successRedirect: Nullable.toNullable options.successRedirect
-        , successMessage: convertAuthenticationMessage options.successMessage
-        , successFlash: convertAuthenticationMessage options.successFlash
-        , failureRedirect: Nullable.toNullable options.failureRedirect
-        , failureMessage: convertAuthenticationMessage options.failureMessage
-        , failureFlash: convertAuthenticationMessage options.failureFlash
-        , assignProperty: Nullable.toNullable options.assignProperty
-        }
-    liftEffect
-      $ runEffectFn3
-          ( runFn4
-              _authenticate
-              passport
-              strategyid
-              optionsImplementation
-              ( case onAuthenticate of
-                  Just onAuthenticate' ->
-                    Nullable.notNull
-                      $ mkEffectFn4 \error user info status ->
-                          runHandlerM
-                            ( onAuthenticate'
-                                { result:
-                                  case Nullable.toMaybe error of
-                                    Just error' -> Authenticate__CustomCallbackResult__Error error'
-                                    Nothing -> case Nullable.toMaybe user of
-                                      Just user' -> Authenticate__CustomCallbackResult__Success user'
-                                      Nothing -> Authenticate__CustomCallbackResult__AuthenticationError
-                                , info: Nullable.toMaybe info
-                                , status: Nullable.toMaybe status
-                                }
-                            )
-                            req
-                            res
-                            nxt
-                  Nothing -> Nullable.null
-              )
-          )
-          req
-          res
-          nxt
+unsafeAuthenticateWithCallback passport strategyid options onAuthenticate =
+  runFn4
+    _authenticateWithCallback
+    passport
+    strategyid
+    (authenticateOptionsToImplementation options)
+    (authenticate__CustomCallbackToImplementation onAuthenticate)
+
+unsafeAuthenticateWithoutCallback ::
+  Passport ->
+  StrategyId ->
+  AuthenticateOptions ->
+  Middleware
+unsafeAuthenticateWithoutCallback passport strategyid options =
+  runFn3
+    _authenticateWithoutCallback
+    passport
+    strategyid
+    (authenticateOptionsToImplementation options)
 
 ------------------------------------------------------------------------------------------------------------------------
 type AddSerializeUser__Implementation__SerializerCallback
